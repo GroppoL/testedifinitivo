@@ -26,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const isTattoo = (type === 'tattoo');
                     tattooFields.style.display = isTattoo ? 'block' : 'none';
 
-                    // Seleciona todos os campos dentro da div de tattoo para alterar o required de uma vez
                     const inputs = tattooFields.querySelectorAll('select, input, textarea');
                     inputs.forEach(input => {
                         input.required = isTattoo;
@@ -36,13 +35,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 3. Show success message
-    if (window.location.search.includes('sucesso=1')) {
-        showNotification('Agendamento solicitado com sucesso!', 'success');
+    // 3. Lógica para manter a aba ativa após redirecionamento
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const hash = window.location.hash.replace('#', '');
+
+    if (status === 'sucesso' || hash === 'agendamentos') {
+        switchTab('agendamentos');
+        if (status === 'sucesso') {
+            showNotification('Agendamento solicitado com sucesso!', 'success');
+        }
+    } else if (hash === 'salvas') {
+        switchTab('salvas');
     }
 });
 
-function switchTab(tabName) {
+// Tornamos a função global para que o onclick do HTML continue funcionando
+window.switchTab = function(tabName) {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
@@ -55,22 +64,14 @@ function switchTab(tabName) {
     });
 }
 
-// Faz a página abrir na aba de salvas se houver o #salvas na URL
-window.addEventListener('load', function() {
-    if (window.location.hash === '#salvas') {
-        switchTab('salvas');
-    }
-});
 function removerTattoo(id) {
     if (confirm('Tem certeza que deseja remover esta referência?')) {
-        // Ajuste o nome do arquivo aqui para bater com o seu arquivo de exclusão
         window.location.href = 'remover-referencia.php?id=' + id;
     }
 }
 
 function showNotification(message, type) {
     const notification = document.createElement('div');
-    // Adicionei classes de estilo básico caso seu CSS não tenha
     notification.className = `alert alert-${type}`;
     notification.textContent = message;
     notification.style.cssText = `
@@ -85,13 +86,13 @@ function showNotification(message, type) {
         color: ${type === 'success' ? '#155724' : '#721c24'};
         border: 1px solid ${type === 'success' ? '#c3e6cb' : '#f5c6cb'};
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: opacity 0.5s ease;
     `;
 
     document.body.appendChild(notification);
 
     setTimeout(() => {
         notification.style.opacity = '0';
-        notification.style.transition = 'opacity 0.5s ease';
         setTimeout(() => notification.remove(), 500);
     }, 3000);
 }
