@@ -1,67 +1,61 @@
 <?php
 session_start();
-
 require_once '../includes/config.php'; 
 require_once '../includes/funcoes.php';
 
-// Garante que apenas tatuadores logados acessem este script
 verificarLogin();
 verificarNivel('TATUADOR');
 
-// 1. Captura e limpeza dos dados vindos da URL
-$idAgendamento = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
-$status = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
+// 1. Processamento via POST (Vindo do formulário com Valor e Obs)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $idAgendamento = filter_input(INPUT_POST, 'idAgendamento', FILTER_SANITIZE_NUMBER_INT);
+    $status = filter_input(INPUT_POST, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
+    
+    // Converte vírgula em ponto para o banco de dados aceitar decimais
+    $vEstimado = !empty($_POST['valorEstimado']) ? str_replace(',', '.', $_POST['valorEstimado']) : null;
+    $vFinal = !empty($_POST['valorFinal']) ? str_replace(',', '.', $_POST['valorFinal']) : null;
+    $obs = filter_input(INPUT_POST, 'observacoes', FILTER_SANITIZE_SPECIAL_CHARS);
 
-// Se não houver ID ou Status, volta para o painel
-if (!$idAgendamento || !$status) {
-    header("Location: area-tatuador.php");
-    exit;
-}
+    if ($idAgendamento) {
+        try {
+            // Atualiza todos os campos. O cliente verá o 'status' alterado na área dele.
+            $sql = "UPDATE agendamento SET 
+                    status = ?, 
+                    valorEstimado = ?, 
+                    valorFinal = ?, 
+                    observacoes = ?, 
+                    atualizadoEm = NOW() 
+                    WHERE idAgendamento = ?";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$status, $vEstimado, $vFinal, $obs, $idAgendamento]);
 
-// 2. Identificação do Tatuador logado (Segurança)
-$usuario_id = $_SESSION['user_id'];
-
-// Busca o idTatuador real para garantir que ele só mexa nos próprios agendamentos
-$stmtTattoo = $pdo->prepare("SELECT idTatuador FROM tatuador WHERE idUsuario = ?");
-$stmtTattoo->execute([$usuario_id]);
-$tatuador = $stmtTattoo->fetch(PDO::FETCH_ASSOC);
-
-if (!$tatuador) {
-    die("Erro crítico: Perfil de tatuador não vinculado ao seu usuário.");
-}
-
-$idTatuadorReal = $tatuador['idTatuador'];
-
-// 3. Validação do Status (Whitelist)
-$statusPermitidos = ['CONFIRMADO', 'CANCELADO', 'CONCLUIDO'];
-
-if (!in_array($status, $statusPermitidos)) {
-    header("Location: area-tatuador.php?erro=status_invalido");
-    exit;
-}
-
-// 4. Execução da Atualização com trava de segurança
-// Só atualiza se o ID do agendamento pertencer ao ID do tatuador logado
-try {
-    $stmt = $pdo->prepare("
-        UPDATE agendamento
-        SET status = ?
-        WHERE idAgendamento = ? AND idTatuador = ?
-    ");
-
-    $stmt->execute([$status, $idAgendamento, $idTatuadorReal]);
-
-    // Verifica se alguma linha foi realmente alterada
-    if ($stmt->rowCount() > 0) {
-        // Sucesso total
-        header("Location: area-tatuador.php?sucesso=status_atualizado");
-    } else {
-        // O ID pode não existir ou não pertence a este tatuador
-        header("Location: area-tatuador.php?erro=nao_autorizado_ou_inexistente");
+            header("Location: area-tatuador.php?sucesso=1");
+            exit;
+        } catch (PDOException $e) {
+            die("Erro ao salvar no banco de dados: " . $e->getMessage());
+        }
     }
-
-} catch (PDOException $e) {
-    // Erro de banco de dados (ex: conexão perdida)
-    header("Location: area-tatuador.php?erro=falha_sistema");
 }
+
+// 2. Processamento via GET (Vindo dos botões rápidos: Confirmar/Cancelar)
+$idGet = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+$statusGet = filter_input(INPUT_GET, 'status', FILTER_SANITIZE_SPECIAL_CHARS);
+
+if ($idGet && $statusGet) {
+    try {
+        $sql = "UPDATE agendamento SET status = ?, atualizadoEm = NOW() WHERE idAgendamento = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$statusGet, $idGet]);
+        
+        header("Location: area-tatuador.php?sucesso=1");
+        exit;
+    } catch (PDOException $e) {
+        header("Location: area-tatuador.php?erro=falha_status");
+        exit;
+    }
+}
+
+// Se chegar aqui sem dados válidos, apenas volta
+header("Location: area-tatuador.php");
 exit;
