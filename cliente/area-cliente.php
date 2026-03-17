@@ -41,6 +41,12 @@ include '../includes/header.php';
         </div>
     <?php endif; ?>
 
+    <?php if (isset($_GET['cancelado']) && $_GET['cancelado'] == 'sucesso'): ?>
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #ffeeba; font-weight: bold;">
+            ❌ Agendamento cancelado com sucesso.
+        </div>
+    <?php endif; ?>
+
     <div class="container">
         <div class="client-header">
             <h1 class="client-title">
@@ -75,17 +81,27 @@ include '../includes/header.php';
                                     <h3 class="booking-title">
                                         <?php echo $agendamento['tipoAgendamento'] === 'tattoo' ? 'Agendamento de Tatuagem' : 'Consulta Presencial'; ?>
                                     </h3>
-                                    <span class="status-badge status-<?php echo strtolower($agendamento['status']); ?>">
-                                        <?php
-                                        $status_labels = [
-                                            'PENDENTE' => '⏳ Pendente',
-                                            'CONFIRMADO' => '✅ Confirmado',
-                                            'CONCLUIDO' => '✔️ Concluído',
-                                            'CANCELADO' => '❌ Cancelado'
-                                        ];
-                                        echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
-                                        ?>
-                                    </span>
+                                    
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                                        <span class="status-badge status-<?php echo strtolower($agendamento['status']); ?>">
+                                            <?php
+                                            $status_labels = [
+                                                'PENDENTE' => '⏳ Pendente',
+                                                'CONFIRMADO' => '✅ Confirmado',
+                                                'CONCLUIDO' => '✔️ Concluído',
+                                                'CANCELADO' => '❌ Cancelado'
+                                            ];
+                                            echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
+                                            ?>
+                                        </span>
+
+                                        <?php if ($agendamento['status'] == 'PENDENTE' || $agendamento['status'] == 'CONFIRMADO'): ?>
+                                            <button onclick="confirmarCancelamento(<?php echo $agendamento['idAgendamento']; ?>)" 
+                                                    style="background: none; border: 1px solid #ff3b3b; color: #ff3b3b; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.3s;">
+                                                Cancelar
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
                                 <div class="booking-details">
@@ -123,110 +139,26 @@ include '../includes/header.php';
             </div>
 
             <div class="tab-content" id="salvas">
-                <?php if (empty($tatuagens_salvas)): ?>
-                    <div class="empty-state">
-                        <div class="empty-icon">❤️</div>
-                        <p class="empty-text">Você ainda não salvou nenhuma tatuagem</p>
-                    </div>
-                <?php else: ?>
-                    <div class="gallery-grid">
-                        <?php foreach ($tatuagens_salvas as $tattoo): ?>
-                            <div class="saved-tattoo-card">
-                                <img src="../<?php echo htmlspecialchars($tattoo['arquivo']); ?>" alt="<?php echo htmlspecialchars($tattoo['titulo']); ?>">
-                                <div class="saved-tattoo-info">
-                                    <h4><?php echo htmlspecialchars($tattoo['titulo']); ?></h4>
-                                    <p class="saved-date">Salvo em <?php echo date('d/m/Y', strtotime($tattoo['dataSalvo'])); ?></p>
-                                </div>
-                                <button class="btn-delete" onclick="removerTattoo(<?php echo $tattoo['idReferencia']; ?>)">🗑️</button>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+                </div>
 
             <div class="tab-content" id="novo">
-                <div class="booking-form-container">
-                    <h2 class="form-title">Novo Agendamento</h2>
-                    <div class="booking-type-selector">
-                        <div class="type-option active" data-type="tattoo">
-                            <div class="type-icon">🎨</div>
-                            <h3>Agendar Tatuagem</h3>
-                            <p>Solicite um horário para fazer sua tattoo</p>
-                        </div>
-                        <div class="type-option" data-type="consulta">
-                            <div class="type-icon">💬</div>
-                            <h3>Consulta Presencial</h3>
-                            <p>Tire suas dúvidas e conheça o estúdio</p>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="../processo_agendamento.php" class="booking-form">
-                        <input type="hidden" name="tipo" id="tipo_agendamento" value="tattoo">
-                        <div class="tattoo-fields">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="tipo_tatuagem">Tipo de Tatuagem</label>
-                                    <select name="tipo_tatuagem" id="tipo_tatuagem" class="form-input">
-                                        <option value="">Selecione...</option>
-                                        <option value="nova">Nova Tatuagem</option>
-                                        <option value="cobertura">Cobertura</option>
-                                        <option value="fechamento">Fechamento</option>
-                                        <option value="restauracao">Restauração</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="primeira_tatuagem">É sua primeira tatuagem?</label>
-                                    <select name="primeira_tatuagem" id="primeira_tatuagem" class="form-input">
-                                        <option value="">Selecione...</option>
-                                        <option value="sim">Sim</option>
-                                        <option value="nao">Não</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="parte_corpo">Parte do Corpo</label>
-                                    <input type="text" name="parte_corpo" id="parte_corpo" class="form-input" placeholder="Ex: Braço, Costas...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="tamanho">Tamanho Aproximado</label>
-                                    <select name="tamanho" id="tamanho" class="form-input">
-                                        <option value="">Selecione...</option>
-                                        <option value="pequeno">Pequeno (até 5cm)</option>
-                                        <option value="medio">Médio (5-15cm)</option>
-                                        <option value="grande">Grande (15-30cm)</option>
-                                        <option value="muitogrande">Muito Grande (+30cm)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="descricao">Descrição da Ideia</label>
-                                <textarea name="descricao" id="descricao" rows="5" class="form-input" placeholder="Descreva sua ideia com o máximo de detalhes..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="data_agendamento">📅 Data Preferida</label>
-                                <input type="date" name="data_agendamento" id="data_agendamento" required class="form-input" min="<?php echo date('Y-m-d'); ?>">
-                            </div>
-                            <div class="form-group">
-                                <label for="hora_agendamento">🕐 Horário Preferido</label>
-                                <select name="hora_agendamento" id="hora_agendamento" required class="form-input">
-                                    <option value="">Selecione...</option>
-                                    <option value="09:00">09:00</option>
-                                    <option value="10:00">10:00</option>
-                                    <option value="11:00">11:00</option>
-                                    <option value="14:00">14:00</option>
-                                    <option value="15:00">15:00</option>
-                                    <option value="16:00">16:00</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn-submit">Solicitar Agendamento</button>
-                    </form>
                 </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+                 <a href="../logout.php" style="color: #ff3b3b; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Sair da Conta</a>
             </div>
-            <a href="../logout.php" style="color: red;">Sair</a>
-        </div> </div> </div> <script src="../assets/js/script.js"></script>
+        </div> 
+    </div> 
+</div>
+
+<script>
+// Função para confirmação de cancelamento
+function confirmarCancelamento(id) {
+    if (confirm("Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.")) {
+        window.location.href = "cancelar-agendamento.php?id=" + id;
+    }
+}
+</script>
+
+<script src="../assets/js/script.js"></script>
 <?php include '../includes/footer.php'; ?>
