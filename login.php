@@ -7,7 +7,7 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $email = limparDados($_POST['email']);
+    $email = trim(limparDados($_POST['email']));
     $senha = $_POST['senha'];
 
     $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
