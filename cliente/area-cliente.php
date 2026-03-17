@@ -227,5 +227,6 @@ include '../includes/header.php';
                     </form>
                 </div>
             </div>
+            <a href="../logout.php" style="color: red;">Sair</a>
         </div> </div> </div> <script src="../assets/js/script.js"></script>
 <?php include '../includes/footer.php'; ?>
