@@ -5,37 +5,74 @@ require_once './includes/funcoes.php';
 
 $erro = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $email = limparDados($_POST['email']);
+//     $email = trim(limparDados($_POST['email']));
+//     $senha = $_POST['senha'];
+
+//     $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
+//     $stmt->execute([$email]);
+
+//     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+//     if ($usuario && password_verify($senha, $usuario['senha'])) {
+
+//         $_SESSION['user_id'] = $usuario['idUsuario'];
+//         $_SESSION['user_nome'] = $usuario['nome'];
+//         $_SESSION['user_nivel'] = $usuario['nivel'];
+
+//         if ($usuario['nivel'] === 'TATUADOR') {
+//             header("Location: tatuador/area-tatuador.php");
+//         } elseif ($usuario['nivel'] === 'ADMIN') {
+//             header("Location: admin/dashboard.php");
+//         } else {
+//             header("Location: cliente/area-cliente.php");
+//         }
+
+//         exit;
+
+//     } else {
+//         $erro = "Email ou senha inválidos!";
+//     }
+// }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 1. Limpa qualquer saída acidental (espaços, echos, var_dumps)
+    ob_start();
+
+    $email = trim(limparDados($_POST['email']));
     $senha = $_POST['senha'];
 
     $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
     $stmt->execute([$email]);
-
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($usuario && password_verify($senha, $usuario['senha'])) {
-
-        // Criar sessão
+        // 2. Registra a sessão
         $_SESSION['user_id'] = $usuario['idUsuario'];
         $_SESSION['user_nome'] = $usuario['nome'];
-        $_SESSION['user_nivel'] = $usuario['nivel'];
+        $_SESSION['user_nivel'] = trim($usuario['nivel']); // trim para garantir que não há espaços
 
-        // 🔥 AQUI É O REDIRECIONAMENTO POR NÍVEL
-        if ($usuario['nivel'] === 'TATUADOR') {
-            header("Location: tatuador/area-tatuador.php");
-        } elseif ($usuario['nivel'] === 'ADMIN') {
-            header("Location: admin/dashboard.php");
-        } else {
-            header("Location: cliente/area-cliente.php");
+        // 3. Define o destino
+        $destino = 'cliente/area-cliente.php';
+        if ($_SESSION['user_nivel'] === 'TATUADOR') {
+            $destino = 'tatuador/area-tatuador.php';
+        } elseif ($_SESSION['user_nivel'] === 'ADMIN') {
+            $destino = 'admin/dashboard.php';
         }
 
-        exit;
+        // 4. Tenta redirecionar por PHP, se falhar, vai por JS
+        if (!headers_sent()) {
+            header("Location: " . $destino);
+            exit;
+        } else {
+            echo '<script type="text/javascript">window.location.href="' . $destino . '";</script>';
+            exit;
+        }
 
     } else {
         $erro = "Email ou senha inválidos!";
     }
+    ob_end_flush();
 }
 ?>
 <?php require_once 'includes/header.php'?>

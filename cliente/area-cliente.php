@@ -21,23 +21,15 @@ if (!$cliente) {
 
 $idCliente = $cliente['idCliente'];
 
-// Buscar agendamentos - Corrigido para usar a coluna correta de ordenação se necessário
-$stmt = $pdo->prepare("
-    SELECT * FROM agendamento
-    WHERE idCliente = ?
-    ORDER BY criadoEm DESC
-");
+// Buscar agendamentos
+$stmt = $pdo->prepare("SELECT * FROM agendamento WHERE idCliente = ? ORDER BY criadoEm DESC");
 $stmt->execute([$idCliente]);
 $agendamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Buscar referências
-$stmt = $pdo->prepare("
-    SELECT * FROM referencia_salva
-    WHERE idCliente = ?
-    ORDER BY dataSalvo DESC
-");
+// Buscar referências (Tatuagens Salvas)
+$stmt = $pdo->prepare("SELECT * FROM referencia_salva WHERE idCliente = ? ORDER BY dataSalvo DESC");
 $stmt->execute([$idCliente]);
-$referencias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$tatuagens_salvas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 include '../includes/header.php'; 
 ?>
@@ -49,9 +41,9 @@ include '../includes/header.php';
         </div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['status']) && $_GET['status'] == 'removido'): ?>
-        <div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #c3e6cb; font-weight: bold;">
-            ✅ Referência removida com sucesso!
+    <?php if (isset($_GET['cancelado']) && $_GET['cancelado'] == 'sucesso'): ?>
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #ffeeba; font-weight: bold;">
+            ❌ Agendamento cancelado com sucesso.
         </div>
     <?php endif; ?>
 
@@ -64,10 +56,10 @@ include '../includes/header.php';
 
             <div class="tabs">
                 <button class="tab-btn active" data-tab="agendamentos">
-                    📅 Meus Agendamentos (<?php echo count($agendamentos ?? []); ?>)
+                    📅 Meus Agendamentos (<?php echo count($agendamentos); ?>)
                 </button>
                 <button class="tab-btn" data-tab="salvas">
-                    ❤️ Tatuagens Salvas (<?php echo count($referencias ?? []); ?>)
+                    ❤️ Tatuagens Salvas (<?php echo count($tatuagens_salvas); ?>)
                 </button>
                 <button class="tab-btn" data-tab="novo">
                     ➕ Novo Agendamento
@@ -89,17 +81,27 @@ include '../includes/header.php';
                                     <h3 class="booking-title">
                                         <?php echo $agendamento['tipoAgendamento'] === 'tattoo' ? 'Agendamento de Tatuagem' : 'Consulta Presencial'; ?>
                                     </h3>
-                                    <span class="status-badge status-<?php echo $agendamento['status']; ?>">
-                                        <?php
-                                        $status_labels = [
-                                            'PENDENTE' => '⏳ Pendente',
-                                            'CONFIRMADO' => '✅ Confirmado',
-                                            'CONCLUIDO' => '✔️ Concluído',
-                                            'CANCELADO' => '❌ Cancelado'
-                                        ];
-                                        echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
-                                        ?>
-                                    </span>
+                                    
+                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                                        <span class="status-badge status-<?php echo strtolower($agendamento['status']); ?>">
+                                            <?php
+                                            $status_labels = [
+                                                'PENDENTE' => '⏳ Pendente',
+                                                'CONFIRMADO' => '✅ Confirmado',
+                                                'CONCLUIDO' => '✔️ Concluído',
+                                                'CANCELADO' => '❌ Cancelado'
+                                            ];
+                                            echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
+                                            ?>
+                                        </span>
+
+                                        <?php if ($agendamento['status'] == 'PENDENTE' || $agendamento['status'] == 'CONFIRMADO'): ?>
+                                            <button onclick="confirmarCancelamento(<?php echo $agendamento['idAgendamento']; ?>)" 
+                                                    style="background: none; border: 1px solid #ff3b3b; color: #ff3b3b; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.3s;">
+                                                Cancelar
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
                                 <div class="booking-details">
@@ -109,17 +111,17 @@ include '../includes/header.php';
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">Horário:</span>
-                                        <span class="detail-value"><?php echo $agendamento['horaAgendamento']; ?></span>
+                                        <span class="detail-value"><?php echo substr($agendamento['horaAgendamento'], 0, 5); ?></span>
                                     </div>
 
                                     <?php if ($agendamento['tipoAgendamento'] === 'tattoo'): ?>
                                         <div class="detail-item">
                                             <span class="detail-label">Tipo:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['tipoTatuagem']); ?></span>
+                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['tipoTatuagem'] ?? ''); ?></span>
                                         </div>
                                         <div class="detail-item">
                                             <span class="detail-label">Local:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['parteCorpo']); ?></span>
+                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['parteCorpo'] ?? ''); ?></span>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -136,4 +138,27 @@ include '../includes/header.php';
                 <?php endif; ?>
             </div>
 
-            ...
+            <div class="tab-content" id="salvas">
+                </div>
+
+            <div class="tab-content" id="novo">
+                </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+                 <a href="../logout.php" style="color: #ff3b3b; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Sair da Conta</a>
+            </div>
+        </div> 
+    </div> 
+</div>
+
+<script>
+// Função para confirmação de cancelamento
+function confirmarCancelamento(id) {
+    if (confirm("Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.")) {
+        window.location.href = "cancelar-agendamento.php?id=" + id;
+    }
+}
+</script>
+
+<script src="../assets/js/script.js"></script>
+<?php include '../includes/footer.php'; ?>

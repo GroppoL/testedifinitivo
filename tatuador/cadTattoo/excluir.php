@@ -1,6 +1,6 @@
 <?php
-require '../conexao.php';
 session_start();
+require_once '../../includes/config.php';
 
 // Verifica se está logado
 if (!isset($_SESSION['idTatuador'])) {
