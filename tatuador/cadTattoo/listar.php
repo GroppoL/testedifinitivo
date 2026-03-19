@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../includes/config.php';
+require_once '../../includes/config.php';
 
 if (!isset($_SESSION['idTatuador'])) {
     header("Location: ../login.php");

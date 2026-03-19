@@ -12,7 +12,7 @@ $usuario_nome = $_SESSION['user_nome'];
 // 1. Identificar aba ativa (adicionada a opção 'portfolio')
 $aba = filter_input(INPUT_GET, 'aba', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'pendentes';
 
-// MANTIDO: SQL buscando dados do cliente e agendamento
+// buscando dados do cliente e agendamento
 $sql = "SELECT a.*, u.nome AS nomeCliente, u.login as telefone
         FROM agendamento a
         JOIN cliente c ON a.idCliente = c.idCliente

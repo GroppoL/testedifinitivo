@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once '../includes/config.php'; // Certifique-se que o nome do arquivo de config está correto
+require_once '../../includes/config.php'; // Certifique-se que o nome do arquivo de config está correto
 
-if (!isset($_SESSION['idTatuador'])) {
-    header("Location: ../login.php");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../../login.php");
     exit;
 }
 
