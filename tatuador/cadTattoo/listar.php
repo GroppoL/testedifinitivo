@@ -19,7 +19,7 @@ $tatuagens = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <title>Minhas Tatuagens</title>
-    <link rel="stylesheet" href="../CSS/style.css">
+    <link rel="stylesheet" href="../../assets/CSS/style.css">
     <style>
         .preview-media { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; background: #eee; }
         .btn-novo { display: inline-block; padding: 10px; background: #28a745; color: #fff; text-decoration: none; border-radius: 5px; margin-bottom: 15px; }
