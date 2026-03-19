@@ -1,52 +1,60 @@
 <?php
 session_start();
-require_once '../../includes/config.php'; // Certifique-se que o nome do arquivo de config está correto
+require_once '../../includes/config.php'; 
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../../login.php");
     exit;
 }
 
+$usuario_id = $_SESSION['user_id'];
+
+// 1. Busca o ID do Tatuador
+$stmtTatuador = $pdo->prepare("SELECT idTatuador FROM tatuador WHERE idUsuario = ?");
+$stmtTatuador->execute([$usuario_id]);
+$tatuador = $stmtTatuador->fetch(PDO::FETCH_ASSOC);
+$idTatuadorReal = $tatuador['idTatuador'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idTatuador = $_SESSION['idTatuador'];
-    $titulo = trim($_POST['titulo']);
+    $titulo    = trim($_POST['titulo']);
     $descricao = trim($_POST['descricao']);
-    $imagem = null;
+    $tipo      = $_POST['tipo']; // Novo campo: Estilo da tatuagem
+    $imagem    = null;
 
     if (isset($_FILES['imagemVideo']) && $_FILES['imagemVideo']['error'] === 0) {
-        $pasta = '../Imagens/';
-        if (!is_dir($pasta)) {
-            mkdir($pasta, 0777, true);
+        $pastaDestino = '../../Imagens/'; 
+        
+        if (!is_dir($pastaDestino)) {
+            mkdir($pastaDestino, 0777, true);
         }
 
         $extensao = strtolower(pathinfo($_FILES['imagemVideo']['name'], PATHINFO_EXTENSION));
-        $permitidos = ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'webm'];
+        $nomeArquivo = uniqid() . "." . $extensao;
 
-        if (in_array($extensao, $permitidos)) {
-            $nomeArquivo = uniqid() . "." . $extensao;
-            if (move_uploaded_file($_FILES['imagemVideo']['tmp_name'], $pasta . $nomeArquivo)) {
-                $imagem = $nomeArquivo;
-            }
-        } else {
-            echo "<script>alert('Formato de arquivo não permitido!');</script>";
+        if (move_uploaded_file($_FILES['imagemVideo']['tmp_name'], $pastaDestino . $nomeArquivo)) {
+            $imagem = $nomeArquivo;
         }
     }
 
     if ($imagem) {
         try {
-            $sql = "INSERT INTO portfolio (idTatuador, titulo, descricao, imagemVideo, dataPublicacao) 
-                    VALUES (:idTatuador, :titulo, :descricao, :imagemVideo, NOW())";
+            // AJUSTE: Usando 'arquivo' e 'tipo' conforme seu banco de dados
+            $sql = "INSERT INTO portfolio (idTatuador, titulo, descricao, arquivo, tipo, dataPublicacao) 
+                    VALUES (:idTatuador, :titulo, :descricao, :arquivo, :tipo, NOW())";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
-                ':idTatuador' => $idTatuador,
-                ':titulo' => $titulo,
+                ':idTatuador' => $idTatuadorReal,
+                ':titulo'    => $titulo,
                 ':descricao' => $descricao,
-                ':imagemVideo' => $imagem
+                ':arquivo'   => $imagem, // Nome da coluna corrigido
+                ':tipo'      => $tipo    // Estilo selecionado
             ]);
 
-            echo "<script>alert('Cadastrado com sucesso!'); window.location.href = 'listar.php';</script>";
+            header("Location: ../area-tatuador.php?aba=portfolio");
+            exit;
+
         } catch (PDOException $e) {
-            echo "<script>alert('Erro ao salvar no banco: " . $e->getMessage() . "');</script>";
+            $erro = "Erro no banco: " . $e->getMessage();
         }
     }
 }
@@ -59,16 +67,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Cadastrar Tatuagem</title>
     <link rel="stylesheet" href="../../assets/CSS/style.css">
 </head>
-<body>
-<div class="container">
+<body style="background:#000; color:#fff; font-family: sans-serif;">
+<div class="container" style="max-width: 500px; margin: 50px auto; padding: 20px; background: #111; border-radius: 8px;">
     <h1>Cadastrar Nova Arte</h1>
+    
+    <?php if(isset($erro)): ?>
+        <div style="background: rgba(255,0,0,0.2); color: #ff3b3b; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            <?php echo $erro; ?>
+        </div>
+    <?php endif; ?>
+
     <form method="POST" enctype="multipart/form-data">
-        <input type="text" name="titulo" placeholder="Título da tatuagem" required>
-        <textarea name="descricao" placeholder="Descrição ou detalhes da técnica" required></textarea>
+        <label>Título:</label>
+        <input type="text" name="titulo" required style="width:100%; padding:10px; margin: 10px 0; background:#222; border:1px solid #333; color:#fff;">
+        
+        <label>Estilo (Tipo):</label>
+        <select name="tipo" required style="width:100%; padding:10px; margin: 10px 0; background:#222; border:1px solid #333; color:#fff;">
+            <option value="Manga">Manga</option>
+            <option value="Blackwork">Blackwork</option>
+            <option value="Realismo">Realismo</option>
+            <option value="Grande Porte">Grande Porte</option>
+            <option value="Geométrico">Geométrico</option>
+            <option value="Floral">Floral</option>
+            <option value="Outros">Outros</option>
+        </select>
+
+        <label>Descrição:</label>
+        <textarea name="descricao" required style="width:100%; padding:10px; margin: 10px 0; background:#222; border:1px solid #333; color:#fff; height: 80px;"></textarea>
+        
         <label>Selecione Foto ou Vídeo:</label>
-        <input type="file" name="imagemVideo" accept="image/*,video/*" required>
-        <button type="submit">Publicar no Portfólio</button>
-        <a href="listar.php" style="display:block; text-align:center; margin-top:10px; color:#666;">Cancelar</a>
+        <input type="file" name="imagemVideo" accept="image/*,video/*" required style="margin: 15px 0;">
+        
+        <div style="display:flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" style="flex:1; background:#ff3b3b; color:#fff; border:none; padding:12px; cursor:pointer; font-weight:bold; border-radius:5px;">Publicar</button>
+            <a href="../area-tatuador.php?aba=portfolio" style="flex:1; background:#333; color:#fff; text-decoration:none; text-align:center; padding:12px; border-radius:5px;">Cancelar</a>
+        </div>
     </form>
 </div>
 </body>

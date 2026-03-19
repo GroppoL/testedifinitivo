@@ -147,7 +147,7 @@ $countPendentes = $pdo->query("SELECT COUNT(*) FROM agendamento WHERE status = '
             <div class="grid-portfolio">
                 <?php foreach ($fotos as $f): ?>
                     <div class="foto-item">
-                        <img src="../Imagens/<?php echo $f['imagemVideo']; ?>">
+                        <img src="../Imagens/<?php echo $f['arquivo']; ?>">
                         <div style="padding: 10px; font-size: 13px;">
                             <?php echo htmlspecialchars($f['titulo']); ?>
                             <div style="margin-top: 5px;">
