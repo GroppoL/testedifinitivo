@@ -1,6 +1,5 @@
 <?php
 if (!isset($pdo)) {
-    // Mantendo a lógica de inclusão original
     require_once 'config.php'; 
     require_once 'funcoes.php';
 }
