@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ])) {
             
             // --- CONFIGURAÇÃO DO WHATSAPP ---
-            $telefoneTatuador = "5513997503892"; 
+            $celularTatuador = "5513997503892"; 
             
             // Montagem da mensagem formatada
             $texto = "🔥 *NOVO AGENDAMENTO* 🔥\n\n";
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $texto .= "\n*Descrição:* " . $descricao;
 
             // Link usando wa.me (mais estável)
-            $linkWhatsapp = "https://wa.me/" . $telefoneTatuador . "?text=" . urlencode($texto);
+            $linkWhatsapp = "https://wa.me/" . $celularTatuador . "?text=" . urlencode($texto);
             
             // 4. Tela Intermediária de Sucesso (Evita erro de conexão)
             ?>

@@ -10,7 +10,7 @@
             Transformando ideias em arte permanente. Mais de 10 anos de experiência.
 
         </p>
-        <a href="cadastro.php" class="btn-hero">📅 Agende sua Sessão</a>
+        <a href="telefone.php" class="btn-hero">📅 Agende sua Sessão</a>
     </div>
 </section>
 
@@ -101,7 +101,7 @@
             Cadastre-se agora e agende uma consulta. Vamos transformar sua ideia em realidade!
 
         </p>
-        <a href="cadastro.php" class="btn-hero">📅 Começar Agora</a>
+        <a href="telefone.php" class="btn-hero">📅 Começar Agora</a>
     </div>
 </section>
 

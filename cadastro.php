@@ -96,7 +96,7 @@ require_once 'includes/header.php';
             </div>
  
             <div class="form-group">
-                <label for="telefone">telefone</label>
+                <label for="telefone">celular</label>
                 <input type="text" id="telefone" name="telefone" required class="form-input">
             </div>
   

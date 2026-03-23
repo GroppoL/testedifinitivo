@@ -13,7 +13,7 @@ $usuario_nome = $_SESSION['user_nome'];
 $aba = filter_input(INPUT_GET, 'aba', FILTER_SANITIZE_SPECIAL_CHARS) ?: 'pendentes';
 
 // buscando dados do cliente e agendamento
-$sql = "SELECT a.*, u.nome AS nomeCliente, u.login as telefone
+$sql = "SELECT a.*, u.nome AS nomeCliente, u.login as celular
         FROM agendamento a
         JOIN cliente c ON a.idCliente = c.idCliente
         JOIN usuario u ON c.idUsuario = u.idUsuario";
@@ -164,7 +164,7 @@ $countPendentes = $pdo->query("SELECT COUNT(*) FROM agendamento WHERE status = '
             <div style="text-align: center; color: #666; padding: 50px;">Nenhum registro encontrado nesta aba.</div>
         <?php else: ?>
             <?php foreach ($agendamentos as $ag): 
-                $tel = preg_replace('/\D/', '', $ag['telefone']);
+                $tel = preg_replace('/\D/', '', $ag['celular']);
                 $whats = "https://wa.me/55" . $tel;
             ?>
                 <div class="card">

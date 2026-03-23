@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 =======
             <p><a href="esqueci-senha.php">Esqueci minha senha</a></p>
 >>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
-            <p>Ainda não tem conta? <a href="cadastro.php" class="link-red">Cadastre-se</a></p>
+            <p>Ainda não tem conta? <a href="telefone.php" class="link-red">Cadastre-se</a></p>
         </div>
     </div>
 </div>
