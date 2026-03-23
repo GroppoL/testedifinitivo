@@ -1,11 +1,11 @@
 <?php
 
-// 🔹 Limpar dados
+//  Limpar dados
 function limparDados($dados) {
     return htmlspecialchars(trim($dados));
 }
 
-// 🔹 Verifica se está logado
+//  Verifica se está logado
 function verificarLogin() {
     if (!isset($_SESSION['user_id'])) {
         header("Location: login.php");
@@ -13,7 +13,7 @@ function verificarLogin() {
     }
 }
 
-// 🔹 Verifica nível de acesso
+//  Verifica nível de acesso
 function verificarNivel($nivelPermitido) {
     if (!isset($_SESSION['user_nivel']) || $_SESSION['user_nivel'] !== $nivelPermitido) {
         header("Location: login.php");
@@ -21,7 +21,7 @@ function verificarNivel($nivelPermitido) {
     }
 }
 
-// 🔹 Logout
+//  Logout
 function logout() {
     session_start();
     session_destroy();
