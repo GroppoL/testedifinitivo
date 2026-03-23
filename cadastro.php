@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
     $nome  = limparDados($_POST['nome']);
     $email = limparDados($_POST['email']);
-    $celular = limparDados($_POST['celular']);
+    $telefone = limparDados($_POST['telefone']);
     $senha = $_POST['senha'];
     $confirma_senha = $_POST['confirma_senha'];
  
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
             // 🔹 Cria usuário na tabela usuario
             $stmt = $pdo->prepare("
-    INSERT INTO usuario (nome, email, login, senha, nivel, celular)
+    INSERT INTO usuario (nome, email, login, senha, nivel, telefone)
     VALUES (?, ?, ?, ?, 'CLIENTE', ?)
 ");
  
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email,
                 $email,
                 $senhaHash,
-                $celular
+                $telefone
             ]);
  
             $idUsuario = $pdo->lastInsertId();
@@ -96,8 +96,8 @@ require_once 'includes/header.php';
             </div>
  
             <div class="form-group">
-                <label for="celular">Celular</label>
-                <input type="text" id="celular" name="celular" required class="form-input">
+                <label for="telefone">telefone</label>
+                <input type="text" id="telefone" name="telefone" required class="form-input">
             </div>
  
             <div class="form-group">
