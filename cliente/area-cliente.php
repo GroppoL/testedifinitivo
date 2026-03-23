@@ -8,18 +8,30 @@ verificarNivel('CLIENTE');
  
 $usuario_id = $_SESSION['user_id'];
 $usuario_nome = $_SESSION['user_nome'];
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
 // 1. Buscar idCliente
 $stmt = $pdo->prepare("SELECT idCliente FROM cliente WHERE idUsuario = ?");
 $stmt->execute([$usuario_id]);
 $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
 $idCliente = $cliente['idCliente'];
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
 // 2. Buscar agendamentos
 $stmt = $pdo->prepare("SELECT * FROM agendamento WHERE idCliente = ? ORDER BY criadoEm DESC");
 $stmt->execute([$idCliente]);
 $agendamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
 // 3. Buscar Tatuagens Salvas (Pinterest)
 $stmt = $pdo->prepare("SELECT * FROM referencia_salva WHERE idCliente = ? ORDER BY dataSalvo DESC");
 $stmt->execute([$idCliente]);
@@ -38,7 +50,11 @@ include '../includes/header.php';
                 <button class="tab-btn" data-tab="novo">➕ Novo Agendamento</button>
             </div>
         </div>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
         <div class="tab-content active" id="agendamentos">
             <?php if (empty($agendamentos)): ?>
                 <p>Você ainda não possui agendamentos.</p>
@@ -54,7 +70,11 @@ include '../includes/header.php';
                 </div>
             <?php endif; ?>
         </div>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
         <div class="tab-content" id="salvas">
             <?php if (empty($tatuagens_salvas)): ?>
                 <p>Você ainda não salvou nenhuma referência.</p>
@@ -68,7 +88,11 @@ include '../includes/header.php';
                 </div>
             <?php endif; ?>
         </div>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
         <div class="tab-content" id="novo">
             <div class="booking-form-container">
                 <h2 class="form-title">Novo Agendamento</h2>
@@ -84,10 +108,17 @@ include '../includes/header.php';
                         <p>Tire suas dúvidas e conheça o estúdio</p>
                     </div>
                 </div>
+<<<<<<< HEAD
  
                 <form method="POST" action="../processo_agendamento.php" class="booking-form">
                     <input type="hidden" name="tipo" id="tipo_agendamento" value="tattoo">
                    
+=======
+
+                <form method="POST" action="../processo_agendamento.php" class="booking-form">
+                    <input type="hidden" name="tipo" id="tipo_agendamento" value="tattoo">
+                    
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
                     <div class="tattoo-fields">
                         <div class="form-row">
                             <div class="form-group">
@@ -129,7 +160,11 @@ include '../includes/header.php';
                             <textarea name="descricao" id="descricao" rows="5" class="form-input" placeholder="Descreva sua ideia..."></textarea>
                         </div>
                     </div>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
                     <div class="form-row">
                         <div class="form-group">
                             <label for="data_agendamento">📅 Data Preferida</label>
@@ -162,7 +197,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.getElementById(btn.dataset.tab).classList.add('active');
     });
 });
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
 // Lógica de seleção do tipo
 document.querySelectorAll('.type-option').forEach(option => {
     option.addEventListener('click', function() {
@@ -170,11 +209,19 @@ document.querySelectorAll('.type-option').forEach(option => {
         this.classList.add('active');
         const type = this.getAttribute('data-type');
         document.getElementById('tipo_agendamento').value = type;
+<<<<<<< HEAD
        
+=======
+        
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
         const tattooFields = document.querySelector('.tattoo-fields');
         tattooFields.style.display = (type === 'consulta') ? 'none' : 'block';
     });
 });
 </script>
+<<<<<<< HEAD
  
+=======
+
+>>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
 <?php include '../includes/footer.php'; ?>
