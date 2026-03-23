@@ -9,9 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
     $nome  = limparDados($_POST['nome']);
     $email = limparDados($_POST['email']);
+    $celular = limparDados($_POST['celular']);
     $senha = $_POST['senha'];
     $confirma_senha = $_POST['confirma_senha'];
- 
     // 🔹 Verifica se senhas coincidem
     if ($senha !== $confirma_senha) {
         $erro = 'As senhas não coincidem!';
@@ -34,17 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
             // 🔹 Cria usuário na tabela usuario
             $stmt = $pdo->prepare("
-                INSERT INTO usuario (nome, email, login, senha, nivel)
-                VALUES (?, ?, ?, ?, 'CLIENTE')
-            ");
- 
-            $stmt->execute([
-                $nome,
-                $email,       // email
-                $email,       // login (vamos usar email como login)
-                $senhaHash
-            ]);
- 
+            INSERT INTO usuario (nome, email, login, senha, nivel, celular)
+            VALUES (?, ?, ?, ?, 'CLIENTE', ?)
+        ");
+        
+                    $stmt->execute([
+                        $nome,
+                        $email,
+                        $email,
+                        $senhaHash,
+                        $celular
+                    ]);
             $idUsuario = $pdo->lastInsertId();
  
             // 🔹 Cria registro na tabela cliente
@@ -91,6 +91,11 @@ require_once 'includes/header.php';
             <div class="form-group">
                 <label for="email">E-mail</label>
                 <input type="email" id="email" name="email" required class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label for="celular">Celular</label>
+                <input type="text" id="celular" name="celular" required class="form-input">
             </div>
  
             <div class="form-group">

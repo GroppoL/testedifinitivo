@@ -104,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
  
         <div class="auth-footer">
+        <p><a href="esqueci-senha.php">Esqueci minha senha</a></p>
             <p>Ainda não tem conta? <a href="cadastro.php" class="link-red">Cadastre-se</a></p>
         </div>
     </div>

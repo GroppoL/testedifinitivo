@@ -11,29 +11,29 @@ if (!isset($pdo)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Studio Sombra - Tatuagens</title>
-    <link rel="stylesheet" href="/test_tatto/assets/css/style.css">
+    <link rel="stylesheet" href="/testedifinitivo/assets/css/style.css">
 </head>
  
 <body>
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="/test_tatto/index.php" class="logo">
+                <a href="/testedifinitivo/index.php" class="logo">
                     <span class="logo-icon">📅</span>
                     <span class="logo-text">Studio Sombra Tattoo</span>
                 </a>
  
                 <nav class="nav">
-                    <a href="/test_tatto/index.php" class="nav-link">Início</a>
+                    <a href="/testedifinitivo/index.php" class="nav-link">Início</a>
                    
                     <?php if (isset($_SESSION['usuario_id'])): ?>
-                        <a href="/test_tatto/cliente/area-cliente.php" class="nav-link">
+                        <a href="/testedifinitivo/cliente/area-cliente.php" class="nav-link">
                             👤 <?php echo htmlspecialchars($_SESSION['usuario_nome']); ?>
                         </a>
-                        <a href="/test_tatto/logout.php" class="nav-link">Sair</a>
+                        <a href="/testedifinitivo/logout.php" class="nav-link">Sair</a>
                     <?php else: ?>
-                        <a href="/test_tatto/login.php" class="nav-link">Login</a>
-                        <a href="/test_tatto/cadastro.php" class="btn-primary">Cadastre-se</a>
+                        <a href="/testedifinitivo/login.php" class="nav-link">Login</a>
+                        <a href="/testedifinitivo/cadastro.php" class="btn-primary">Cadastre-se</a>
                     <?php endif; ?>
                 </nav>
             </div>

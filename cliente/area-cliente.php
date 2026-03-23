@@ -1,164 +1,180 @@
 <?php
 session_start();
-
 require_once('../includes/config.php');
 require_once('../includes/funcoes.php');
-
+ 
 verificarLogin();
 verificarNivel('CLIENTE');
-
+ 
 $usuario_id = $_SESSION['user_id'];
 $usuario_nome = $_SESSION['user_nome'];
-
-// Buscar idCliente
+ 
+// 1. Buscar idCliente
 $stmt = $pdo->prepare("SELECT idCliente FROM cliente WHERE idUsuario = ?");
 $stmt->execute([$usuario_id]);
 $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$cliente) {
-    die("Perfil de cliente não encontrado.");
-}
-
 $idCliente = $cliente['idCliente'];
-
-// Buscar agendamentos
+ 
+// 2. Buscar agendamentos
 $stmt = $pdo->prepare("SELECT * FROM agendamento WHERE idCliente = ? ORDER BY criadoEm DESC");
 $stmt->execute([$idCliente]);
 $agendamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Buscar referências (Tatuagens Salvas)
+ 
+// 3. Buscar Tatuagens Salvas (Pinterest)
 $stmt = $pdo->prepare("SELECT * FROM referencia_salva WHERE idCliente = ? ORDER BY dataSalvo DESC");
 $stmt->execute([$idCliente]);
 $tatuagens_salvas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-include '../includes/header.php'; 
+ 
+include '../includes/header.php';
 ?>
-
+ 
 <div class="client-area">
-    <?php if (isset($_GET['status']) && $_GET['status'] == 'sucesso'): ?>
-        <div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #c3e6cb; font-weight: bold;">
-            📅 Solicitação enviada! Aguarde a confirmação do tatuador.
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($_GET['cancelado']) && $_GET['cancelado'] == 'sucesso'): ?>
-        <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #ffeeba; font-weight: bold;">
-            ❌ Agendamento cancelado com sucesso.
-        </div>
-    <?php endif; ?>
-
     <div class="container">
         <div class="client-header">
-            <h1 class="client-title">
-                Olá, <span class="text-red"><?php echo htmlspecialchars($usuario_nome); ?></span>!
-            </h1>
-            <p class="client-subtitle">Gerencie suas tatuagens e agendamentos</p>
-
+            <h1 class="client-title">Olá, <span class="text-red"><?php echo htmlspecialchars($usuario_nome); ?></span>!</h1>
             <div class="tabs">
-                <button class="tab-btn active" data-tab="agendamentos">
-                    📅 Meus Agendamentos (<?php echo count($agendamentos); ?>)
-                </button>
-                <button class="tab-btn" data-tab="salvas">
-                    ❤️ Tatuagens Salvas (<?php echo count($tatuagens_salvas); ?>)
-                </button>
-                <button class="tab-btn" data-tab="novo">
-                    ➕ Novo Agendamento
-                </button>
+                <button class="tab-btn active" data-tab="agendamentos">📅 Meus Agendamentos</button>
+                <button class="tab-btn" data-tab="salvas">❤️ Tatuagens Salvas</button>
+                <button class="tab-btn" data-tab="novo">➕ Novo Agendamento</button>
             </div>
-
-            <div class="tab-content active" id="agendamentos">
-                <?php if (empty($agendamentos)): ?>
-                    <div class="empty-state">
-                        <div class="empty-icon">📅</div>
-                        <p class="empty-text">Você ainda não tem agendamentos</p>
-                        <button class="btn-primary" onclick="switchTab('novo')">Fazer Agendamento</button>
+        </div>
+ 
+        <div class="tab-content active" id="agendamentos">
+            <?php if (empty($agendamentos)): ?>
+                <p>Você ainda não possui agendamentos.</p>
+            <?php else: ?>
+                <div class="bookings-grid">
+                    <?php foreach ($agendamentos as $ag): ?>
+                        <div class="booking-card" style="background: #1a1a1a; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ff3b3b;">
+                            <strong><?php echo ($ag['tipoAgendamento'] == 'tattoo') ? 'Tatuagem' : 'Consulta'; ?></strong>
+                            <p>Data: <?php echo date('d/m/Y', strtotime($ag['dataAgendamento'])); ?> às <?php echo $ag['horaAgendamento']; ?></p>
+                            <span class="status-badge"><?php echo $ag['status']; ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+ 
+        <div class="tab-content" id="salvas">
+            <?php if (empty($tatuagens_salvas)): ?>
+                <p>Você ainda não salvou nenhuma referência.</p>
+            <?php else: ?>
+                <div class="portfolio-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                    <?php foreach ($tatuagens_salvas as $ref): ?>
+                        <div class="portfolio-item">
+                            <img src="../Imagens/<?php echo htmlspecialchars($ref['arquivo']); ?>" style="width: 100%; border-radius: 8px;">
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+ 
+        <div class="tab-content" id="novo">
+            <div class="booking-form-container">
+                <h2 class="form-title">Novo Agendamento</h2>
+                <div class="booking-type-selector">
+                    <div class="type-option active" data-type="tattoo">
+                        <div class="type-icon">🎨</div>
+                        <h3>Agendar Tatuagem</h3>
+                        <p>Solicite um horário para fazer sua tattoo</p>
                     </div>
-                <?php else: ?>
-                    <div class="bookings-grid">
-                        <?php foreach ($agendamentos as $agendamento): ?>
-                            <div class="booking-card">
-                                <div class="booking-header">
-                                    <h3 class="booking-title">
-                                        <?php echo $agendamento['tipoAgendamento'] === 'tattoo' ? 'Agendamento de Tatuagem' : 'Consulta Presencial'; ?>
-                                    </h3>
-                                    
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                                        <span class="status-badge status-<?php echo strtolower($agendamento['status']); ?>">
-                                            <?php
-                                            $status_labels = [
-                                                'PENDENTE' => '⏳ Pendente',
-                                                'CONFIRMADO' => '✅ Confirmado',
-                                                'CONCLUIDO' => '✔️ Concluído',
-                                                'CANCELADO' => '❌ Cancelado'
-                                            ];
-                                            echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
-                                            ?>
-                                        </span>
-
-                                        <?php if ($agendamento['status'] == 'PENDENTE' || $agendamento['status'] == 'CONFIRMADO'): ?>
-                                            <button onclick="confirmarCancelamento(<?php echo $agendamento['idAgendamento']; ?>)" 
-                                                    style="background: none; border: 1px solid #ff3b3b; color: #ff3b3b; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.3s;">
-                                                Cancelar
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <div class="booking-details">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Data:</span>
-                                        <span class="detail-value"><?php echo date('d/m/Y', strtotime($agendamento['dataAgendamento'])); ?></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Horário:</span>
-                                        <span class="detail-value"><?php echo substr($agendamento['horaAgendamento'], 0, 5); ?></span>
-                                    </div>
-
-                                    <?php if ($agendamento['tipoAgendamento'] === 'tattoo'): ?>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Tipo:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['tipoTatuagem'] ?? ''); ?></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Local:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['parteCorpo'] ?? ''); ?></span>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <?php if ($agendamento['descricao']): ?>
-                                    <div class="booking-description">
-                                        <strong>Descrição:</strong>
-                                        <p><?php echo nl2br(htmlspecialchars($agendamento['descricao'])); ?></p>
-                                    </div>
-                                <?php endif; ?>
+                    <div class="type-option" data-type="consulta">
+                        <div class="type-icon">💬</div>
+                        <h3>Consulta Presencial</h3>
+                        <p>Tire suas dúvidas e conheça o estúdio</p>
+                    </div>
+                </div>
+ 
+                <form method="POST" action="../processo_agendamento.php" class="booking-form">
+                    <input type="hidden" name="tipo" id="tipo_agendamento" value="tattoo">
+                   
+                    <div class="tattoo-fields">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tipo_tatuagem">Tipo de Tatuagem</label>
+                                <select name="tipo_tatuagem" id="tipo_tatuagem" class="form-input">
+                                    <option value="">Selecione...</option>
+                                    <option value="Nova Tatuagem">Nova Tatuagem</option>
+                                    <option value="Cobertura">Cobertura</option>
+                                    <option value="Fechamento">Fechamento</option>
+                                    <option value="Restauração">Restauração</option>
+                                </select>
                             </div>
-                        <?php endforeach; ?>
+                            <div class="form-group">
+                                <label for="primeira_tatuagem">É sua primeira tatuagem?</label>
+                                <select name="primeira_tatuagem" id="primeira_tatuagem" class="form-input">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="parte_corpo">Parte do Corpo</label>
+                                <input type="text" name="parte_corpo" id="parte_corpo" class="form-input" placeholder="Ex: Braço, Costas...">
+                            </div>
+                            <div class="form-group">
+                                <label for="tamanho">Tamanho Aproximado</label>
+                                <select name="tamanho" id="tamanho" class="form-input">
+                                    <option value="">Selecione...</option>
+                                    <option value="Pequeno (até 5cm)">Pequeno (até 5cm)</option>
+                                    <option value="Médio (5-15cm)">Médio (5-15cm)</option>
+                                    <option value="Grande (15-30cm)">Grande (15-30cm)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="descricao">Descrição da Ideia</label>
+                            <textarea name="descricao" id="descricao" rows="5" class="form-input" placeholder="Descreva sua ideia..."></textarea>
+                        </div>
                     </div>
-                <?php endif; ?>
+ 
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="data_agendamento">📅 Data Preferida</label>
+                            <input type="date" name="data_agendamento" id="data_agendamento" required class="form-input" min="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="hora_agendamento">🕐 Horário Preferido</label>
+                            <select name="hora_agendamento" id="hora_agendamento" required class="form-input">
+                                <option value="09:00">09:00</option>
+                                <option value="11:00">11:00</option>
+                                <option value="14:00">14:00</option>
+                                <option value="16:00">16:00</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Solicitar Agendamento</button>
+                </form>
             </div>
-
-            <div class="tab-content" id="salvas">
-                </div>
-
-            <div class="tab-content" id="novo">
-                </div>
-
-            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
-                 <a href="../logout.php" style="color: #ff3b3b; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Sair da Conta</a>
-            </div>
-        </div> 
-    </div> 
+        </div>
+    </div>
 </div>
-
+ 
 <script>
-// Função para confirmação de cancelamento
-function confirmarCancelamento(id) {
-    if (confirm("Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.")) {
-        window.location.href = "cancelar-agendamento.php?id=" + id;
-    }
-}
+// Lógica de abas
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+ 
+// Lógica de seleção do tipo
+document.querySelectorAll('.type-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        const type = this.getAttribute('data-type');
+        document.getElementById('tipo_agendamento').value = type;
+       
+        const tattooFields = document.querySelector('.tattoo-fields');
+        tattooFields.style.display = (type === 'consulta') ? 'none' : 'block';
+    });
+});
 </script>
-
-<script src="../assets/js/script.js"></script>
+ 
 <?php include '../includes/footer.php'; ?>

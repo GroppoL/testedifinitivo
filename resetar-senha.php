@@ -1,29 +1,26 @@
 <?php
 session_start();
 require_once 'includes/config.php';
-require_once 'includes/funcoes.php';
 
 if (!isset($_GET['token'])) {
-    die("Token inválido");
+    die("Token inválido.");
 }
 
 $token = $_GET['token'];
 
 $stmt = $pdo->prepare("
     SELECT * FROM usuario 
-    WHERE reset_token = ? 
-    AND reset_expira > NOW()
+    WHERE reset_token = ? AND reset_expira > NOW()
 ");
 $stmt->execute([$token]);
 
 $user = $stmt->fetch();
 
 if (!$user) {
-    die("Token inválido ou expirado");
+    die("Token inválido ou expirado.");
 }
 
-$mensagem = '';
-
+// FORM
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
@@ -36,33 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt->execute([$senha, $user['idUsuario']]);
 
-    $mensagem = "Senha alterada com sucesso! <br><a href='login.php'>Ir para login</a>";
+    echo "Senha alterada com sucesso!";
+    exit;
 }
 ?>
 
-<?php require_once 'includes/header.php'; ?>
-
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-icon">🔒</div>
-            <h2 class="auth-title">Nova Senha</h2>
-            <p class="auth-subtitle">Digite sua nova senha</p>
-        </div>
-
-        <?php if ($mensagem): ?>
-            <div class="alert alert-success"><?= $mensagem ?></div>
-        <?php endif; ?>
-
-        <form method="POST" class="auth-form">
-            <div class="form-group">
-                <label>Nova senha</label>
-                <input type="password" name="senha" required class="form-input">
-            </div>
-
-            <button type="submit" class="btn-submit">Salvar nova senha</button>
-        </form>
-    </div>
-</div>
-
-<?php require_once 'includes/footer.php'; ?>
+<form method="POST">
+    <input type="password" name="senha" placeholder="Nova senha" required>
+    <button type="submit">Salvar nova senha</button>
+</form>
