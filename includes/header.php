@@ -1,10 +1,6 @@
 <?php
 if (!isset($pdo)) {
-<<<<<<< HEAD
-    require_once 'config.php';
-=======
     require_once 'config.php'; 
->>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
     require_once 'funcoes.php';
 }
 ?>

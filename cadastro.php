@@ -9,16 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
     $nome  = limparDados($_POST['nome']);
     $email = limparDados($_POST['email']);
-<<<<<<< HEAD
-    $celular = limparDados($_POST['celular']);
-    $senha = $_POST['senha'];
-    $confirma_senha = $_POST['confirma_senha'];
-=======
     $telefone = limparDados($_POST['telefone']);
     $senha = $_POST['senha'];
     $confirma_senha = $_POST['confirma_senha'];
- 
->>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
+
     // 🔹 Verifica se senhas coincidem
     if ($senha !== $confirma_senha) {
         $erro = 'As senhas não coincidem!';
@@ -41,19 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
  
             // 🔹 Cria usuário na tabela usuario
             $stmt = $pdo->prepare("
-<<<<<<< HEAD
-            INSERT INTO usuario (nome, email, login, senha, nivel, celular)
-            VALUES (?, ?, ?, ?, 'CLIENTE', ?)
-        ");
-        
-                    $stmt->execute([
-                        $nome,
-                        $email,
-                        $email,
-                        $senhaHash,
-                        $celular
-                    ]);
-=======
     INSERT INTO usuario (nome, email, login, senha, nivel, telefone)
     VALUES (?, ?, ?, ?, 'CLIENTE', ?)
 ");
@@ -66,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $telefone
             ]);
  
->>>>>>> d82bbbff45b5caa0a29bceaf2f107c3648439321
             $idUsuario = $pdo->lastInsertId();
  
             // 🔹 Cria registro na tabela cliente
@@ -119,12 +99,7 @@ require_once 'includes/header.php';
                 <label for="telefone">telefone</label>
                 <input type="text" id="telefone" name="telefone" required class="form-input">
             </div>
- 
-            <div class="form-group">
-                <label for="celular">Celular</label>
-                <input type="text" id="celular" name="celular" required class="form-input">
-            </div>
- 
+  
             <div class="form-group">
                 <label for="senha">Senha</label>
                 <input type="password" id="senha" name="senha" required class="form-input">
