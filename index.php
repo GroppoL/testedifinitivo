@@ -18,12 +18,12 @@
     <div class="container">
         <div class="bio-grid">
             <div class="bio-image">
-                <img src="https://images.unsplash.com/photo-1482328177731-274399da39f0?w=800" alt="Tatuador">
+                <img src="img/foto.jpg" alt="Tatuador">
             </div>
             <div class="bio-content">
                 <h2 class="section-title">Conheça o <span class="text-red">Artista</span></h2>
                 <p class="bio-text">
-                    Com mais de uma década de experiência, especializo-me em criar
+                    Com mais de cinco anos de experiência, especializo-me em criar
 
                     tatuagens únicas que contam histórias. Cada projeto é tratado com
 

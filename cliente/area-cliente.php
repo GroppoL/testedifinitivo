@@ -41,12 +41,6 @@ include '../includes/header.php';
         </div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['cancelado']) && $_GET['cancelado'] == 'sucesso'): ?>
-        <div style="background-color: #fff3cd; color: #856404; padding: 15px; margin: 20px auto; max-width: 1200px; border-radius: 5px; text-align: center; border: 1px solid #ffeeba; font-weight: bold;">
-            ❌ Agendamento cancelado com sucesso.
-        </div>
-    <?php endif; ?>
-
     <div class="container">
         <div class="client-header">
             <h1 class="client-title">
@@ -78,60 +72,10 @@ include '../includes/header.php';
                         <?php foreach ($agendamentos as $agendamento): ?>
                             <div class="booking-card">
                                 <div class="booking-header">
-                                    <h3 class="booking-title">
-                                        <?php echo $agendamento['tipoAgendamento'] === 'tattoo' ? 'Agendamento de Tatuagem' : 'Consulta Presencial'; ?>
-                                    </h3>
-                                    
-                                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                                        <span class="status-badge status-<?php echo strtolower($agendamento['status']); ?>">
-                                            <?php
-                                            $status_labels = [
-                                                'PENDENTE' => '⏳ Pendente',
-                                                'CONFIRMADO' => '✅ Confirmado',
-                                                'CONCLUIDO' => '✔️ Concluído',
-                                                'CANCELADO' => '❌ Cancelado'
-                                            ];
-                                            echo $status_labels[$agendamento['status']] ?? $agendamento['status'];
-                                            ?>
-                                        </span>
-
-                                        <?php if ($agendamento['status'] == 'PENDENTE' || $agendamento['status'] == 'CONFIRMADO'): ?>
-                                            <button onclick="confirmarCancelamento(<?php echo $agendamento['idAgendamento']; ?>)" 
-                                                    style="background: none; border: 1px solid #ff3b3b; color: #ff3b3b; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.3s;">
-                                                Cancelar
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
+                                    <h3><?php echo $agendamento['tipoAgendamento'] === 'tattoo' ? 'Tatuagem' : 'Consulta'; ?></h3>
+                                    <span class="status-badge"><?php echo $agendamento['status']; ?></span>
                                 </div>
-
-                                <div class="booking-details">
-                                    <div class="detail-item">
-                                        <span class="detail-label">Data:</span>
-                                        <span class="detail-value"><?php echo date('d/m/Y', strtotime($agendamento['dataAgendamento'])); ?></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Horário:</span>
-                                        <span class="detail-value"><?php echo substr($agendamento['horaAgendamento'], 0, 5); ?></span>
-                                    </div>
-
-                                    <?php if ($agendamento['tipoAgendamento'] === 'tattoo'): ?>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Tipo:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['tipoTatuagem'] ?? ''); ?></span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Local:</span>
-                                            <span class="detail-value"><?php echo htmlspecialchars($agendamento['parteCorpo'] ?? ''); ?></span>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-
-                                <?php if ($agendamento['descricao']): ?>
-                                    <div class="booking-description">
-                                        <strong>Descrição:</strong>
-                                        <p><?php echo nl2br(htmlspecialchars($agendamento['descricao'])); ?></p>
-                                    </div>
-                                <?php endif; ?>
+                                <p>Data: <?php echo date('d/m/Y', strtotime($agendamento['dataAgendamento'])); ?></p>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -142,7 +86,83 @@ include '../includes/header.php';
                 </div>
 
             <div class="tab-content" id="novo">
+                <div class="booking-form-container">
+                    <h2 class="form-title">Novo Agendamento</h2>
+                    <div class="booking-type-selector" style="display: flex; gap: 20px; margin-bottom: 30px;">
+                        <div class="type-option active" data-type="tattoo" style="cursor:pointer; flex:1; padding:20px; border:2px solid #333; border-radius:10px; text-align:center;">
+                            <div class="type-icon">🎨</div>
+                            <h3>Agendar Tatuagem</h3>
+                            <p>Solicite um horário para fazer sua tattoo</p>
+                        </div>
+                        <div class="type-option" data-type="consulta" style="cursor:pointer; flex:1; padding:20px; border:2px solid #333; border-radius:10px; text-align:center;">
+                            <div class="type-icon">💬</div>
+                            <h3>Consulta Presencial</h3>
+                            <p>Tire suas dúvidas e conheça o estúdio</p>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="./agendar.php" class="booking-form">
+                        <input type="hidden" name="tipo" id="tipo_agendamento" value="tattoo">
+                        
+                        <div class="tattoo-fields">
+                            <div class="form-row" style="display:flex; gap:15px; margin-bottom:15px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Tipo de Tatuagem</label>
+                                    <select name="tipo_tatuagem" class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                                        <option value="nova">Nova Tatuagem</option>
+                                        <option value="cobertura">Cobertura</option>
+                                        <option value="fechamento">Fechamento</option>
+                                        <option value="restauracao">Restauração</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>Primeira tatuagem?</label>
+                                    <select name="primeira_tatuagem" class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                                        <option value="sim">Sim</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row" style="display:flex; gap:15px; margin-bottom:15px;">
+                                <div class="form-group" style="flex:1;">
+                                    <label>Parte do Corpo</label>
+                                    <input type="text" name="parte_corpo" class="form-input" placeholder="Ex: Braço" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>Tamanho Aproximado</label>
+                                    <select name="tamanho" class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                                        <option value="pequeno">Pequeno (até 5cm)</option>
+                                        <option value="medio">Médio (5-15cm)</option>
+                                        <option value="grande">Grande (15-30cm)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:15px;">
+                                <label>Descrição da Ideia</label>
+                                <textarea name="descricao" rows="4" class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="display:flex; gap:15px; margin-bottom:20px;">
+                            <div class="form-group" style="flex:1;">
+                                <label>📅 Data Preferida</label>
+                                <input type="date" name="data_agendamento" required class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label>🕐 Horário Preferido</label>
+                                <select name="hora_agendamento" required class="form-input" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #333;">
+                                    <option value="09:00">09:00</option>
+                                    <option value="14:00">14:00</option>
+                                    <option value="16:00">16:00</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="width:100%; padding:15px; background:#ff3b3b; color:#fff; border:none; font-weight:bold; cursor:pointer;">Solicitar Agendamento</button>
+                    </form>
                 </div>
+            </div>
 
             <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
                  <a href="../logout.php" style="color: #ff3b3b; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Sair da Conta</a>
@@ -152,13 +172,29 @@ include '../includes/header.php';
 </div>
 
 <script>
-// Função para confirmação de cancelamento
-function confirmarCancelamento(id) {
-    if (confirm("Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.")) {
-        window.location.href = "cancelar-agendamento.php?id=" + id;
-    }
-}
+// Mantendo sua lógica de abas
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+});
+
+// Lógica para os cards de tipo de agendamento
+document.querySelectorAll('.type-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.type-option').forEach(opt => opt.style.borderColor = '#333');
+        this.style.borderColor = '#ff3b3b';
+        const type = this.getAttribute('data-type');
+        document.getElementById('tipo_agendamento').value = type;
+        
+        // Esconde campos de tattoo se for consulta
+        const tattooFields = document.querySelector('.tattoo-fields');
+        tattooFields.style.display = (type === 'consulta') ? 'none' : 'block';
+    });
+});
 </script>
 
-<script src="../assets/js/script.js"></script>
 <?php include '../includes/footer.php'; ?>
